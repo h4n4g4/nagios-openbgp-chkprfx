@@ -9,8 +9,16 @@ Router box:
 - pfSense/FreeBSD with OpenBGPD;
 - NRPEv2 package (https://github.com/pfsense/FreeBSD-ports/commits/devel/net-mgmt/pfSense-pkg-nrpe).
 
+   Plugin:  check_bgp_neighbors_v2 
+
+            -rwxr-xr-x  1 root  wheel   968B  check_bgp_neighbors_v2
+
+            Grant permission to execute.
+
+
 External:
 - Nagios Monitoring server.
 
-
+            + Host/Service definition;
+            + Command definition.
                                                         
