@@ -1,0 +1,13 @@
+# HOST DEFINITION
+
+define host{
+        host_name       bgx1_loopback_bgp       ; The name we're giving to this host
+        alias           bgx1_loopback_bgp       ; A longer name associated with the host
+        address         172.16.0.1              ; IP address of the host
+        }
+
+define service{
+        use                             generic-service
+        host_name                       bgx1_loopback_bgp
+        service_description             bgx1_bgp_Peer_A
+        check_command                   check_bgp!Peer_A 500000 400000
