@@ -1,0 +1,49 @@
+#! /bin/sh
+#states
+STATE_OK=0
+STATE_WARNING=1
+STATE_CRITICAL=2
+STATE_UNKNOWN=3
+
+NEIGHBOR=$1
+WARNING=$2
+CRITICAL=$3
+
+
+if [ -e $NEIGHBOR ] || [ -e $WARNING ] || [ -e $CRITICAL ];
+then
+        echo "Missing parameters"
+	exit 1
+elif [ -n "$4" ]; then 
+	echo "Extra parameters"
+	exit 1
+fi
+
+NEIGHBOR_STATE=$(bgpctl sh nei $NEIGHBOR | grep "BGP state" | awk '{print $4}' | sed 's/,//')
+PREFIXES_RECEIVED=$(bgpctl sh | grep "$NEIGHBOR " | awk '{print $7}' | sed 's/\/.*//')
+
+VALID_PREFIXES=$(echo $PREFIXES_RECEIVED | grep "^-\?[0-9]*$")
+
+
+
+if [ $NEIGHBOR_STATE == "Established" ];
+then
+        echo "$NEIGHBOR_STATE: $PREFIXES_RECEIVED prefixes received"
+else
+		return $STATE_CRITICAL
+fi
+
+if [ -z "$VALID_PREFIXES" ]; 
+#if [ -z "$PREFIXES_RECEIVED" ];
+then	
+		return $STATE_CRITICAL
+elif [ "$PREFIXES_RECEIVED" -lt "$CRITICAL" ];
+then
+        return $STATE_CRITICAL
+elif [ "$PREFIXES_RECEIVED" -lt "$WARNING" ];
+then
+        return $STATE_WARNING
+else
+		return $STATE_OK
+fi
+
