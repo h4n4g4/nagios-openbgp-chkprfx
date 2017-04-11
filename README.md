@@ -16,75 +16,42 @@ Files
 
 On FreeBSD box with NRPEv2:
 
--rwxr-xr-x  1 root  wheel   968B Dec  2 23:23 check_bgp_neighbors_v2
+/usr/local/libexec/nagios/check_bgp_neighbors_v2
 
-#! /bin/sh
-#states
-STATE_OK=0
-STATE_WARNING=1
-STATE_CRITICAL=2
-STATE_UNKNOWN=3
-
-NEIGHBOR=$1
-WARNING=$2
-CRITICAL=$3
-
-
-if [ -e $NEIGHBOR ] || [ -e $WARNING ] || [ -e $CRITICAL ];
-then
-        echo "Missing parameters"
-	exit 1
-elif [ -n "$4" ]; then 
-	echo "Extra parameters"
-	exit 1
-fi
-
-NEIGHBOR_STATE=$(bgpctl sh nei $NEIGHBOR | grep "BGP state" | awk '{print $4}' | sed 's/,//')
-PREFIXES_RECEIVED=$(bgpctl sh | grep "$NEIGHBOR " | awk '{print $7}' | sed 's/\/.*//')
-
-VALID_PREFIXES=$(echo $PREFIXES_RECEIVED | grep "^-\?[0-9]*$")
+-rwxr-xr-x  1 root  wheel   968B  check_bgp_neighbors_v2
 
 
 
-if [ $NEIGHBOR_STATE == "Established" ];
-then
-        echo "$NEIGHBOR_STATE: $PREFIXES_RECEIVED prefixes received"
-else
-		return $STATE_CRITICAL
-fi
+On Nagios Server:
 
-if [ -z "$VALID_PREFIXES" ]; 
-#if [ -z "$PREFIXES_RECEIVED" ];
-then	
-		return $STATE_CRITICAL
-elif [ "$PREFIXES_RECEIVED" -lt "$CRITICAL" ];
-then
-        return $STATE_CRITICAL
-elif [ "$PREFIXES_RECEIVED" -lt "$WARNING" ];
-then
-        return $STATE_WARNING
-else
-		return $STATE_OK
-fi
+Nagios command definition:
+
+# 'check_bgp' command definition
+define command{
+	command_name check_bgp
+	command_line $USER1$/check_nrpe -H $HOSTADDRESS$ -c check_bgp -a '$ARG1$'
+}
 
 
+Nagios host/service definition:
 
-
-
-
-
-
-Nagios service definition:
+define host{
+        host_name       bgx1_loopback_bgp         ; The name we're giving to this host
+        alias           bgx1_loopback_bgp         ; A longer name associated with the host
+        address         123.321.123.3             ; IP address of the host
+	parents		bgx1
+        }
 
 define service{
         use                             generic-service
         host_name                       bgx1_loopback_bgp
-        service_description             BGP1-PTT-RJ_RS4
-        check_command                   check_bgp!PTT-SP-RS4 14000 10000
+        service_description             BGP1-NB
+        check_command                   check_bgp!NB-Full-Routing 400000 300000
 }
-
-                                                               ^     ^
-                                                               |     \-- Min. prefixes 
-                                                               |
-                                                         Max. prefixes
+                                                                    ^     ^
+                                                                    ^     ^
+                                                                    |     \-- Min. received prefixes threshold 
+                                                                    |
+								    !
+                                                        Expected received prefixes
                                                         
