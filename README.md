@@ -10,48 +10,5 @@ Requirements:
 
 - Nagios Monitoring server.
 
-Usage:
 
-Files
-
-On FreeBSD box with NRPEv2:
-
-/usr/local/libexec/nagios/check_bgp_neighbors_v2
-
--rwxr-xr-x  1 root  wheel   968B  check_bgp_neighbors_v2
-
-
-
-On Nagios Server:
-
-Nagios command definition:
-
-# 'check_bgp' command definition
-define command{
-	command_name check_bgp
-	command_line $USER1$/check_nrpe -H $HOSTADDRESS$ -c check_bgp -a '$ARG1$'
-}
-
-
-Nagios host/service definition:
-
-define host{
-        host_name       bgx1_loopback_bgp         ; The name we're giving to this host
-        alias           bgx1_loopback_bgp         ; A longer name associated with the host
-        address         123.321.123.3             ; IP address of the host
-	parents		bgx1
-        }
-
-define service{
-        use                             generic-service
-        host_name                       bgx1_loopback_bgp
-        service_description             BGP1-NB
-        check_command                   check_bgp!NB-Full-Routing 400000 300000
-}
-                                                                    ^     ^
-                                                                    ^     ^
-                                                                    |     \-- Min. received prefixes threshold 
-                                                                    |
-								    !
-                                                        Expected received prefixes
                                                         
