@@ -5,8 +5,11 @@ Nagios NRPE nrpe is used to execute Nagios plugins on remote hosts and report th
 
 Requirements:
 
+On router box:
+
 - FreeBSD / pfSense with OpenBGPD;
 - NRPEv2 (https://github.com/pfsense/FreeBSD-ports/commits/devel/net-mgmt/pfSense-pkg-nrpe).
+
 
 - Nagios Monitoring server.
 
